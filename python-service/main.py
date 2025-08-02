@@ -5,6 +5,8 @@ from sentence_transformers import SentenceTransformer
 import io
 import docx
 import spacy
+import torch
+from torch.nn.functional import cosine_similarity
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -28,7 +30,8 @@ def extract_name(text: str) -> str:
     return "Unknown"
 
 def get_embedding(text):
-    return model.encode(text)
+    return torch.tensor(model.encode(text))
+
 
 @app.post("/upload")
 async def upload(
@@ -53,15 +56,19 @@ async def upload(
         name = extract_name(text)
 
         resume_embedding = get_embedding(text)
+        similarity_score = cosine_similarity(job_embedding, resume_embedding, dim=0).item()
+
 
         extracted_resumes.append({
             "filename": file.filename,
             "applicant_name": name,
-            "size": len(contents),
-            "extracted_text": text[:500] 
+            "similarity": round(similarity_score, 4),
+            "text_preview": text[:300]
         })
+
+    extracted_resumes.sort(key=lambda x: x["similarity"], reverse=True)
 
     return {
         "job_description": job_description,
-        "resumes": extracted_resumes
+        "ranked_resumes": extracted_resumes
     }
