@@ -2,15 +2,7 @@ import express from 'express';
 import { Rank } from '../controllers/rank';
 import multer from 'multer';
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');  // where to store
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + '-' + file.originalname;
-    cb(null, uniqueName); // name of the file
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({ storage });
 
