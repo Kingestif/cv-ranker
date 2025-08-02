@@ -1,15 +1,34 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
+import axios from "axios";
+import FormData from "form-data";
+import fs from 'fs';
 
 export const Rank = async(req:Request, res:Response) => {
     try{
-        const Resumes = req.files;
-        const JobDescription = req.body.JobDescription;
+        const resumes = req.files as Express.Multer.File[];
+        const job_description = req.body.job_description;
+        if (!resumes || resumes.length === 0) {
+            return res.status(400).json({ status: "fail", message: "No file uploaded" });
+        }
 
-        console.log(JobDescription);
-        console.log(Resumes);
+        const form = new FormData();
+
+        resumes.forEach(file => {
+            form.append('resumes', file.buffer, {
+                filename: file.originalname,
+                contentType: file.mimetype,
+            });
+        });
+
+        form.append('job_description', job_description);
+
+        const response = await axios.post('http://localhost:8000/upload', form, {
+            headers:form.getHeaders(),
+        });
         
         res.status(200).json({
-            status: "success"
+            status: "success",
+            data: response.data
         });
 
     }catch(error){
