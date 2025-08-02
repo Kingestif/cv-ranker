@@ -4,3 +4,5 @@ python-multipart
 python-docx
 pdfminer.six
 spacy
+sentence-transformers
+torch
