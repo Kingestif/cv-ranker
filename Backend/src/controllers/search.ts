@@ -7,7 +7,7 @@ export const Search = async(req:Request, res:Response) => {
         const sessionId = req.params.sessionId;
 
         const response = await axios.post('http://localhost:8000/search', {
-            session_id: "42159b5e-b5ea-4c06-8bea-5bdafe18e351",
+            session_id: "fea5e5da-65b7-4ce9-aba7-e9750eca3840",
             query: query
         });
 
@@ -17,9 +17,19 @@ export const Search = async(req:Request, res:Response) => {
         });
 
     }catch(error){
-        res.status(500).json({
-            status: "server error",
-            message: error instanceof Error ? error.message : String(error)
-        });
+        if (axios.isAxiosError(error) && error.response) {
+            const status = error.response.status;
+            const message = error.response.data.detail || 'Something went wrong';
+
+            res.status(status).json({
+                status: "fail",
+                message
+            });
+        } else {
+            res.status(500).json({
+                status: "error",
+                message: error instanceof Error ? error.message : String(error)
+            });
+        }
     }
 }
