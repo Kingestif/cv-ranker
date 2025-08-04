@@ -1,0 +1,19 @@
+services:
+    redis:
+      image: redis:7.4.5-alpine
+      container_name: Redis-Resume
+      restart: always
+      ports:
+        - "6379:6379"
+
+      networks:
+        - Resume-network
+      volumes:
+        - redis-data:/data
+
+
+networks:
+  Resume-network:
+
+volumes:
+  redis-data:
