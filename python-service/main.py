@@ -32,45 +32,50 @@ def extract_name(text: str) -> str:
             return ent.text
     return "Unknown"
 
-def get_embedding(text):
-    return torch.tensor(model.encode(text))
-
-
 @app.post("/upload")
 async def upload(
     resumes: List[UploadFile] = File(...),
     job_description: str = Form(...)
 ):
-    extracted_resumes = []
-    job_embedding = get_embedding(job_description)
-
-
+    # extract text
+    resume_texts = []
     for file in resumes:
         contents = await file.read()
-
         if file.filename.lower().endswith(".pdf"):
             text = extract_pdf_text(contents)
         elif file.filename.lower().endswith(".docx"):
             text = extract_docx_text(contents)
         else:
             text = "Unsupported file type"
+        resume_texts.append(text)
 
-        # Extract name using NER
+    # batch embed the resumes
+    resume_embeddings = model.encode(resume_texts, convert_to_numpy=True)
+    faiss.normalize_L2(resume_embeddings)
+
+    d = resume_embeddings.shape[1]
+    index = faiss.IndexFlatIP(d) 
+    index.add(resume_embeddings) 
+
+    # embed job jesc
+    job_embedding = model.encode([job_description], convert_to_numpy=True)
+    faiss.normalize_L2(job_embedding)
+
+    # get top k similar resumes
+    k = min(5, len(resumes))
+    distances, indices = index.search(job_embedding, k)
+
+    extracted_resumes = []
+    for i, idx in enumerate(indices[0]):
+        text = resume_texts[idx]
         name = extract_name(text)
-
-        resume_embedding = get_embedding(text)
-        similarity_score = cosine_similarity(job_embedding, resume_embedding, dim=0).item()
-
-
         extracted_resumes.append({
-            "filename": file.filename,
+            "filename": resumes[idx].filename,
             "applicant_name": name,
-            "similarity": round(similarity_score, 4),
+            "similarity": round(float(distances[0][i]), 4),
             "text_preview": text[:300],
-            "embedding": resume_embedding.tolist()
+            "embedding": resume_embeddings[idx].tolist()
         })
-
-    extracted_resumes.sort(key=lambda x: x["similarity"], reverse=True)
 
     session_id = str(uuid4())
     save_session(session_id, {
