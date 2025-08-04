@@ -5,15 +5,16 @@ from sentence_transformers import SentenceTransformer
 import io
 import docx
 import spacy
-import torch
 from torch.nn.functional import cosine_similarity
 from uuid import uuid4
 from redis_client import save_session
 import faiss
+from search import router as search_router
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 nlp = spacy.load("en_core_web_sm")
 app = FastAPI()
+app.include_router(search_router)
 
 
 def extract_pdf_text(file_bytes: bytes) -> str:
