@@ -47,7 +47,7 @@ async def upload(
         elif file.filename.lower().endswith(".docx"):
             text = extract_docx_text(contents)
         else:
-            text = "Unsupported file type"
+            return {"error": f"Unsupported file type: {file.filename}"}
         resume_texts.append(text)
 
     # batch embed the resumes
@@ -63,7 +63,7 @@ async def upload(
     faiss.normalize_L2(job_embedding)
 
     # get top k similar resumes
-    k = min(5, len(resumes))
+    k = len(resumes)
     distances, indices = index.search(job_embedding, k)
 
     extracted_resumes = []
