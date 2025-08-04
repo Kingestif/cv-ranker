@@ -7,11 +7,14 @@ import docx
 import spacy
 import torch
 from torch.nn.functional import cosine_similarity
+from uuid import uuid4
+from redis_client import save_session
+import faiss
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
-
 nlp = spacy.load("en_core_web_sm")
 app = FastAPI()
+
 
 def extract_pdf_text(file_bytes: bytes) -> str:
     with io.BytesIO(file_bytes) as fh:
@@ -63,12 +66,21 @@ async def upload(
             "filename": file.filename,
             "applicant_name": name,
             "similarity": round(similarity_score, 4),
-            "text_preview": text[:300]
+            "text_preview": text[:300],
+            "embedding": resume_embedding.tolist()
         })
 
     extracted_resumes.sort(key=lambda x: x["similarity"], reverse=True)
 
+    session_id = str(uuid4())
+    save_session(session_id, {
+        "job_description": job_description,
+        "jd_embedding": job_embedding.tolist(),
+        "resumes": extracted_resumes
+    })
+
     return {
+        "session_id": session_id,
         "job_description": job_description,
         "ranked_resumes": extracted_resumes
     }

@@ -6,3 +6,5 @@ pdfminer.six
 spacy
 sentence-transformers
 torch
+redis
+faiss-cpu
