@@ -1,9 +1,8 @@
 import { Request, response, Response } from "express";
 import axios from "axios";
 import FormData from "form-data";
-import fs from 'fs';
 
-export const Rank = async(req:Request, res:Response) => {
+export const Upload = async(req:Request, res:Response) => {
     try{
         const resumes = req.files as Express.Multer.File[];
         const job_description = req.body.job_description;
