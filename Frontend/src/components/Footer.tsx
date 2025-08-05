@@ -1,4 +1,4 @@
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { Github, Linkedin, Mail, Twitter } from "lucide-react";
 
 export function Footer(){
     return (
@@ -6,16 +6,16 @@ export function Footer(){
             <div className="text-2xl">CVision</div>
             <div className="flex flex-col">
                 <div className="flex gap-5">
-                    <div>About</div>
-                    <div>Contact</div>
-                    <div>Support</div>
+                    <a href="">About</a>
+                    <a href="">Contact</a>
+                    <a href="">Support</a>
                 </div>
                 <div>©2025 CVision. All right reserved.</div>
             </div>
             <div className="flex gap-5">
-                <Linkedin />
-                <Github />
-                <Twitter />
+                <a href="https://www.linkedin.com/in/estif/"><Linkedin /></a>
+                <a href="https://github.com/Kingestif"><Github /></a>
+                <a href=""><Twitter /></a>
             </div>
         </div> 
     )
