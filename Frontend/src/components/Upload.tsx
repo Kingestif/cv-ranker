@@ -5,21 +5,51 @@ import { Footer } from "./Footer";
 import { useState } from "react";
 
 type UploadedFilesProps = {
-  files: File[];
+  rankedResults: RankedResults | null;
 };
 
-export function UploadedFiles({ files }: UploadedFilesProps) {
+type RankedResults = {
+  session_id: string
+  job_description: string
+  ranked_resumes: RankedResume[]
+}
+
+type RankedResume = {
+  filename: string
+  applicant_name: string
+  similarity: number
+  text_preview: string
+}
+
+export function UploadedFiles({rankedResults }: UploadedFilesProps) {
   return (
-    <div className="my-30 bg-blue-600 rounded-xl shadow p-4 h-170 w-300 ">
-      <div className="text-lg font-semibold mb-2">Your Uploaded Files</div>
-      <ul className="text-sm text-gray-600 w-full">
-        {files.slice(0, 3).map((file, idx) => (
-          <li key={idx} className="truncate w-full" title={file.name}>{file.name}</li>
-        ))}
-        {files.length > 3 && (
-          <li className="text-xs text-gray-400">...and {files.length - 3} more</li>
-        )}
-      </ul>
+    <div className="font-mono flex gap-5 flex-col my-30  rounded-xl  p-4 h-170 w-300 shadow-[0_0_30px_0.1px_rgba(0,0,0,0.2)]">
+        <div className="text-2xl font-mono text-blue-600 font-bold">Top Applicants for this role</div>
+        <div className="flex">
+            <div>
+                <div className="w-200 h-150 overflow-y-auto">
+                    <ol className="list-decimal ml-10">
+                        {rankedResults && (
+                            rankedResults.ranked_resumes.map((result, idx) => (
+                                <li key={idx} className="mb-2">
+                                    <div className="font-bold">{result.applicant_name}</div>
+                                    <div className="">{result.filename}</div>
+                                    <div className="">{result.text_preview}</div>
+                                </li>
+                            ))   
+                        )}
+                    </ol>
+                </div>
+            </div>
+            <div className="h-150 border-l border-gray-300 border-1 mx-6"></div>
+            <div className="w-full flex flex-col gap-5 justify-between">
+                <div className="flex flex-col gap-5">
+                    <input type="text" placeholder="Search for specific skill" className="text-md border-1 rounded-md p-2 border-gray-400 focus:outline:none focus:border-gray-700 focus:outline-none"/>
+                    <button className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition">Sort</button>
+                </div>
+                <a href="" className="bg-blue-100 text-center text-blue-600 font-semibold px-2 py-3 rounded-2xl hover:bg-blue-200 transition">Hire Professionals?</a>
+            </div>
+        </div>
     </div>
   );
 }
@@ -29,10 +59,28 @@ export function Upload() {
     const uploadedFilesRef = useRef<HTMLDivElement>(null);
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [showUploadedFiles, setShowUploadedFiles] = useState(false);
+    const [jobDescription, setJobDescription] = useState("");
+    const [rankedResults, setRankedResults] = useState<RankedResults | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
-        setShowUploadedFiles(true); // show files on submit
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!jobDescription.trim()) {
+            alert("Job description is required.");
+            return;
+        }
+        if (selectedFiles.length === 0) {
+            alert("Please upload at least one resume.");
+            return;
+        }
+
+        const formData = new FormData();
+        selectedFiles.forEach((file) => {
+            formData.append('files', file);
+        });
+        formData.append('job_description', jobDescription);
+
+        setShowUploadedFiles(true); // show files on submit
         setTimeout(() => {
             if (uploadedFilesRef.current) {
                 uploadedFilesRef.current.scrollIntoView({
@@ -40,6 +88,19 @@ export function Upload() {
                 });
             }
         }, 100); 
+
+        try{
+            const response = await fetch('http://localhost:3000/api/v1/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            console.log("HERE IS DATA", data);
+            setRankedResults(data.data);
+            console.log("Ranked Results:", rankedResults);
+        }catch(error){
+            alert("Failed to rank resumes");
+        }
     };
 
     return (
@@ -48,7 +109,7 @@ export function Upload() {
 
             <form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-6 w-[40rem] max-w-full m-auto shadow-[0_0_30px_0.1px_rgba(0,0,0,0.2)] bg-white p-8 rounded-2xl"
+                className="font-mono flex flex-col gap-6 w-[40rem] max-w-full m-auto shadow-[0_0_30px_0.1px_rgba(0,0,0,0.2)] bg-white p-8 rounded-2xl"
             >
                 <div className="font-semibold text-3xl text-gray-800">Upload Documents</div>
                 <hr className="text-gray-200" />
@@ -61,6 +122,7 @@ export function Upload() {
                         placeholder="Provide a brief description of the job or role"
                         className="border rounded px-3 py-2 w-full border-gray-300 focus:border-gray-500 focus:outline-none text-sm"
                         rows={4}
+                        onChange={(e) => setJobDescription(e.target.value)}
                     />
                 </label>
 
@@ -123,7 +185,7 @@ export function Upload() {
             
             {showUploadedFiles && selectedFiles.length > 0 && (
                 <div ref={uploadedFilesRef} className="flex justify-center mt-10">
-                    <UploadedFiles files={selectedFiles} />
+                    <UploadedFiles rankedResults={rankedResults} />
                 </div>
             )}
 
