@@ -4,9 +4,9 @@ export function NavBar(){
     const location = useLocation();
     return (
         <div className="flex justify-between mx-40 my-5 font-mono items-center">
-            <a href="" className="font-bold text-xl text-blue-600">CVision</a>
+            <Link to="/" className="font-bold text-xl text-blue-600">CVision</Link>
             <div className="flex gap-10">
-                <a href="">Home</a>
+                <Link to="/">Home</Link>
                 <a href="">Services</a>
                 <a href="">Contact</a>
                 <a href="">About</a>

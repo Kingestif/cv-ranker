@@ -2,7 +2,7 @@ import { ArrowRight } from "lucide-react"
 import { Link } from "react-router-dom"
 export function Hero(){
     return (
-        <div className="flex flex-col items-center mt-15 gap-10 font-mono">
+        <div className="flex flex-col items-center mt-15 gap-20 font-mono">
             {/* <div className="font-bold text-2xl text-gray-600"> Work Smarter Not Harder</div> */}
             <div className="font-bold text-6xl w-170 text-center text-blue-500 text-shadow-sm"> AI-Powered Resume Screening</div>
             <div className="text-sm w-200 text-center"> Take control of your time with our all-in-one productive app. Upload resumes, Get ranked results within seconds.</div>
