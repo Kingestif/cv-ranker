@@ -5,7 +5,11 @@ import { Footer } from "./Footer";
 import { useState } from "react";
 
 type UploadedFilesProps = {
-  rankedResults: RankedResults | null;
+    rankedResults: RankedResults | null;
+    searchResults?: RankedResume[] | null;
+    handleSearch: () => Promise<void>;
+    setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+    searchQuery: string;
 };
 
 type RankedResults = {
@@ -21,37 +25,51 @@ type RankedResume = {
   text_preview: string
 }
 
-export function UploadedFiles({rankedResults }: UploadedFilesProps) {
-  return (
-    <div className="font-mono flex gap-5 flex-col my-30  rounded-xl  p-4 h-170 w-300 shadow-[0_0_30px_0.1px_rgba(0,0,0,0.2)]">
-        <div className="text-2xl font-mono text-blue-600 font-bold">Top Applicants for this role</div>
-        <div className="flex">
-            <div>
-                <div className="w-200 h-150 overflow-y-auto">
-                    <ol className="list-decimal ml-10">
-                        {rankedResults && (
-                            rankedResults.ranked_resumes.map((result, idx) => (
-                                <li key={idx} className="mb-2">
-                                    <div className="font-bold">{result.applicant_name}</div>
-                                    <div className="">{result.filename}</div>
-                                    <div className="">{result.text_preview}</div>
-                                </li>
-                            ))   
-                        )}
-                    </ol>
+export function UploadedFiles({ rankedResults, searchResults, handleSearch, setSearchQuery, searchQuery }: UploadedFilesProps) {
+    const resumesToShow = searchResults && searchResults.length > 0 ? searchResults : rankedResults?.ranked_resumes || [];      //is user searched show the search based otherwise default ranked resumes
+
+    return (
+        <div className="font-mono flex gap-5 flex-col my-30  rounded-xl  p-4 h-170 w-300 shadow-[0_0_30px_0.1px_rgba(0,0,0,0.2)]">
+            <div className="text-2xl font-mono text-blue-600 font-bold">Top Applicants for this role</div>
+            <div className="flex">
+                <div>
+                    <div className="w-200 h-150 overflow-y-auto">
+                        <ol className="list-decimal ml-10">
+                            {resumesToShow && (
+                                resumesToShow.map((result, idx) => (
+                                    <li key={idx} className="mb-2">
+                                        <div className="font-bold">{result.applicant_name}</div>
+                                        <div className="">{result.filename}</div>
+                                        <div className="">{result.text_preview}</div>
+                                    </li>
+                                ))   
+                            )}
+                        </ol>
+                    </div>
                 </div>
-            </div>
-            <div className="h-150 border-l border-gray-300 border-1 mx-6"></div>
-            <div className="w-full flex flex-col gap-5 justify-between">
-                <div className="flex flex-col gap-5">
-                    <input type="text" placeholder="Search for specific skill" className="text-md border-1 rounded-md p-2 border-gray-400 focus:outline:none focus:border-gray-700 focus:outline-none"/>
-                    <button className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition">Sort</button>
+                <div className="h-150 border-l border-gray-300 border-1 mx-6"></div>
+                <div className="w-full flex flex-col gap-5 justify-between">
+                    <div className="flex flex-col gap-5">
+                        <input 
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            value={searchQuery}
+                            type="text" 
+                            placeholder="Search for specific skill" 
+                            className="text-md border-1 rounded-md p-2 border-gray-400 focus:outline:none focus:border-gray-700 focus:outline-none"
+                        />
+                        
+                        <button
+                            className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition"
+                            onClick={handleSearch}
+                            >
+                            Sort
+                        </button>
+                    </div>
+                    <a href="" className="bg-blue-100 text-center text-blue-600 font-semibold px-2 py-3 rounded-2xl hover:bg-blue-200 transition">Hire Professionals?</a>
                 </div>
-                <a href="" className="bg-blue-100 text-center text-blue-600 font-semibold px-2 py-3 rounded-2xl hover:bg-blue-200 transition">Hire Professionals?</a>
             </div>
         </div>
-    </div>
-  );
+    );
 }
 
 export function Upload() {
@@ -61,6 +79,8 @@ export function Upload() {
     const [showUploadedFiles, setShowUploadedFiles] = useState(false);
     const [jobDescription, setJobDescription] = useState("");
     const [rankedResults, setRankedResults] = useState<RankedResults | null>(null);
+    const [searchResults, setSearchResults] = useState<RankedResume[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -97,9 +117,43 @@ export function Upload() {
             const data = await response.json();
             console.log("HERE IS DATA", data);
             setRankedResults(data.data);
-            console.log("Ranked Results:", rankedResults);
         }catch(error){
             alert("Failed to rank resumes");
+        }
+    };
+
+    const handleSearch = async () => {
+        if (!searchQuery.trim()) {
+            // If query is empty, shows full list instead
+            setSearchResults([]);
+            return;
+        }
+
+
+        try {
+            if (!rankedResults?.session_id) {
+                alert("Please rank resumes first.");
+                return;
+            }
+
+            const response = await fetch(`http://localhost:3000/api/v1/search/${encodeURIComponent(searchQuery)}`, {
+                method: "GET",
+                headers: {
+                    "x-session-id": rankedResults.session_id
+                }
+            });
+
+
+            const data = await response.json();
+            console.log("Search response:", data.data);
+            setSearchResults(data.data.top_matches || []);
+        } catch (error) {
+            alert("Search failed.");
+            if (error instanceof Error) {
+                console.log(error.message);
+            } else {
+                console.log(error);
+            }
         }
     };
 
@@ -185,7 +239,13 @@ export function Upload() {
             
             {showUploadedFiles && selectedFiles.length > 0 && (
                 <div ref={uploadedFilesRef} className="flex justify-center mt-10">
-                    <UploadedFiles rankedResults={rankedResults} />
+                    <UploadedFiles 
+                        rankedResults={rankedResults} 
+                        searchResults={searchResults}
+                        handleSearch={handleSearch}
+                        setSearchQuery={setSearchQuery}
+                        searchQuery={searchQuery}
+                    />
                 </div>
             )}
 
