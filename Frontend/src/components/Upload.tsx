@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { NavBar } from "./NavBar";
 import { Footer } from "./Footer";
 import { useState } from "react";
+import type { RankedResults, RankedResume } from "../Types";
 
 type UploadedFilesProps = {
     rankedResults: RankedResults | null;
@@ -10,43 +11,50 @@ type UploadedFilesProps = {
     handleSearch: () => Promise<void>;
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
     searchQuery: string;
+    loading: boolean;
 };
 
-type RankedResults = {
-  session_id: string
-  job_description: string
-  ranked_resumes: RankedResume[]
-}
-
-type RankedResume = {
-  filename: string
-  applicant_name: string
-  similarity: number
-  text_preview: string
-}
-
-export function UploadedFiles({ rankedResults, searchResults, handleSearch, setSearchQuery, searchQuery }: UploadedFilesProps) {
-    const resumesToShow = searchResults && searchResults.length > 0 ? searchResults : rankedResults?.ranked_resumes || [];      //is user searched show the search based otherwise default ranked resumes
+export function UploadedFiles({ rankedResults, searchResults, handleSearch, setSearchQuery, searchQuery, loading }: UploadedFilesProps) {
+    const resumesToShow = searchResults && searchResults.length > 0 ? searchResults : rankedResults?.ranked_resumes || [];      //if user searched rank based on search, otherwise default ranked resumes
 
     return (
         <div className="font-mono flex gap-5 flex-col my-30  rounded-xl  p-4 h-170 w-300 shadow-[0_0_30px_0.1px_rgba(0,0,0,0.2)]">
             <div className="text-2xl font-mono text-blue-600 font-bold">Top Applicants for this role</div>
             <div className="flex">
-                <div>
-                    <div className="w-200 h-150 overflow-y-auto">
-                        <ol className="list-decimal ml-10">
-                            {resumesToShow && (
-                                resumesToShow.map((result, idx) => (
+                {
+                    loading? (
+                    // Pulse placeholder until results are fetched
+                        <div className="w-400 h-150 overflow-y-auto">
+                            <ol className="flex flex-col gap-10 list-decimal ml-10">
+                                {[...Array(5)].map((_, idx) => (
                                     <li key={idx} className="mb-2">
-                                        <div className="font-bold">{result.applicant_name}</div>
-                                        <div className="">{result.filename}</div>
-                                        <div className="">{result.text_preview}</div>
+                                    <div className="h-5 bg-gray-300 rounded w-3/5 mb-1 animate-pulse"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-1 animate-pulse"></div>
+                                    <div className="h-15 bg-gray-200 rounded w-full animate-pulse"></div>
                                     </li>
-                                ))   
-                            )}
-                        </ol>
-                    </div>
-                </div>
+                                ))}
+                            </ol>
+                        </div>
+
+                    ): (
+                        <div>
+                            <div className="w-200 h-150 overflow-y-auto">
+                                <ol className="list-decimal ml-10">
+                                    {resumesToShow && (
+                                        resumesToShow.map((result, idx) => (
+                                            <li key={idx} className="mb-5">
+                                                <div className="font-bold">{result.applicant_name}</div>
+                                                <div className="text-gray-500">{result.filename}</div>
+                                                <div className="">{result.text_preview}</div>
+                                            </li>
+                                        ))   
+                                    )}
+                                </ol>
+                            </div>
+                        </div>
+
+                    )
+                }
                 <div className="h-150 border-l border-gray-300 border-1 mx-6"></div>
                 <div className="w-full flex flex-col gap-5 justify-between">
                     <div className="flex flex-col gap-5">
@@ -59,10 +67,11 @@ export function UploadedFiles({ rankedResults, searchResults, handleSearch, setS
                         />
                         
                         <button
-                            className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition"
+                            className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
                             onClick={handleSearch}
+                            disabled={searchQuery.trim() === ""}
                             >
-                            Sort
+                            Search
                         </button>
                     </div>
                     <a href="" className="bg-blue-100 text-center text-blue-600 font-semibold px-2 py-3 rounded-2xl hover:bg-blue-200 transition">Hire Professionals?</a>
@@ -81,9 +90,11 @@ export function Upload() {
     const [rankedResults, setRankedResults] = useState<RankedResults | null>(null);
     const [searchResults, setSearchResults] = useState<RankedResume[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
 
         if (!jobDescription.trim()) {
             alert("Job description is required.");
@@ -119,6 +130,8 @@ export function Upload() {
             setRankedResults(data.data);
         }catch(error){
             alert("Failed to rank resumes");
+        }finally{
+            setLoading(false);
         }
     };
 
@@ -229,8 +242,8 @@ export function Upload() {
                     </div>
                 )}
 
-                {selectedFiles.length > 0 && (
-                    <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-blue-700 transition" disabled={selectedFiles.length === 0}>
+                {selectedFiles.length > 0 && jobDescription.trim() !== "" && (
+                    <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-blue-700 transition" disabled={selectedFiles.length === 0 || !jobDescription.trim()}>
                         Rank Resumes
                     </button>
                 )}
@@ -245,11 +258,12 @@ export function Upload() {
                         handleSearch={handleSearch}
                         setSearchQuery={setSearchQuery}
                         searchQuery={searchQuery}
+                        loading={loading}
                     />
                 </div>
             )}
 
-            <div className="mt-auto mb-8 text-white mx-40 font-bold">
+            <div className=" mt-auto mb-8 mx-40 font-semibold text-sm bg-blue-600 px-5 py-5 rounded-2xl text-white ">
                 <Footer />
             </div>
         </div>
