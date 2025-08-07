@@ -27,13 +27,6 @@ def extract_docx_text(file_bytes: bytes) -> str:
         document = docx.Document(fh)
         return "\n".join([para.text for para in document.paragraphs])
     
-# def extract_name(text: str) -> str:
-#     doc = nlp(text)
-#     for ent in doc.ents:
-#         if ent.label_ == "PERSON":
-#             return ent.text
-#     return "Unknown"
-
 def extract_name_with_pipeline(resume_text: str) -> str:
     question = "What is the full name of the candidate?"
     context = resume_text.strip()[:1000]  # name likely appears in the first 1000 characters
@@ -41,7 +34,7 @@ def extract_name_with_pipeline(resume_text: str) -> str:
     result = qa_pipeline(question=question, context=context)
     answer = result["answer"].strip()
 
-    if len(answer.split()) > 5 or answer.lower() in ["unknown", "n/a"]:
+    if len(answer.split()) > 10 or answer.lower() in ["unknown", "n/a"]:
         return "Unknown"
     
     return answer

@@ -17,8 +17,8 @@ class SearchRequest(BaseModel):
 
 @router.post("/search")
 async def search_resumes(req: SearchRequest):
-    alpha_jd = float(os.getenv("ALPHA_JD", 0.7))
-    alpha_query = float(os.getenv("ALPHA_QUERY", 0.3))
+    alpha_jd = float(os.getenv("ALPHA_JD", 0.5))
+    alpha_query = float(os.getenv("ALPHA_QUERY", 0.5))
     
     session_id = req.session_id
     query = req.query
@@ -58,7 +58,7 @@ async def search_resumes(req: SearchRequest):
     for i, idx in enumerate(indices[0]):
         jd_score = jd_scores[idx]
         query_score = float(query_scores[0][i])
-        final_score = alpha_jd * jd_score + 0.3 * alpha_query
+        final_score = alpha_jd * jd_score + query_score * alpha_query
 
         r = resumes[idx]
         
