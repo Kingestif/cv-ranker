@@ -4,10 +4,12 @@ import { Request, response, Response } from "express";
 export const Search = async(req:Request, res:Response) => {
     try{
         const query = req.params.searchQuery;
-        const sessionId = req.params.sessionId;
+        const sessionId = req.headers["x-session-id"];
+        // const sessionId = req.params.sessionId;
+
 
         const response = await axios.post('http://localhost:8000/search', {
-            session_id: "fea5e5da-65b7-4ce9-aba7-e9750eca3840",
+            session_id: sessionId,
             query: query
         });
 
