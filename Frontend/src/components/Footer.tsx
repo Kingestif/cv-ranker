@@ -12,7 +12,7 @@ export function Footer(){
                 </div>
                 <div>©2025 CVision. All right reserved.</div>
             </div>
-            <div className="flex gap-5">
+            <div className="flex gap-5 items-center">
                 <a href="https://www.linkedin.com/in/estif/"><Linkedin /></a>
                 <a href="https://github.com/Kingestif"><Github /></a>
                 <a href=""><Twitter /></a>
