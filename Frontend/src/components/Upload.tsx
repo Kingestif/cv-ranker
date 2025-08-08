@@ -12,9 +12,10 @@ type UploadedFilesProps = {
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
     searchQuery: string;
     loading: boolean;
+    searchLoading?: boolean; 
 };
 
-export function UploadedFiles({ rankedResults, searchResults, handleSearch, setSearchQuery, searchQuery, loading }: UploadedFilesProps) {
+export function UploadedFiles({ rankedResults, searchResults, handleSearch, setSearchQuery, searchQuery, loading, searchLoading }: UploadedFilesProps) {
     const resumesToShow = searchResults && searchResults.length > 0 ? searchResults : rankedResults?.ranked_resumes || [];      //if user searched rank based on search, otherwise default ranked resumes
 
     return (
@@ -22,9 +23,9 @@ export function UploadedFiles({ rankedResults, searchResults, handleSearch, setS
             <div className="text-2xl font-mono text-blue-600 font-bold">Top Applicants for this role</div>
             <div className="flex">
                 {
-                    loading? (
+                    (loading || searchLoading) ? (
                     // Pulse placeholder until results are fetched
-                        <div className="w-400 h-150 overflow-y-auto">
+                        <div className="w-700 h-150  overflow-y-auto">
                             <ol className="flex flex-col gap-10 list-decimal ml-10">
                                 {[...Array(5)].map((_, idx) => (
                                     <li key={idx} className="mb-2">
@@ -37,22 +38,19 @@ export function UploadedFiles({ rankedResults, searchResults, handleSearch, setS
                         </div>
 
                     ): (
-                        <div>
-                            <div className="w-200 h-150 overflow-y-auto">
-                                <ol className="list-decimal ml-10">
-                                    {resumesToShow && (
-                                        resumesToShow.map((result, idx) => (
-                                            <li key={idx} className="mb-5">
-                                                <div className="font-bold">{result.applicant_name}</div>
-                                                <div className="text-gray-500">{result.filename}</div>
-                                                <div className="">{result.text_preview}</div>
-                                            </li>
-                                        ))   
-                                    )}
-                                </ol>
-                            </div>
+                        <div className="w-700 h-150 overflow-y-auto">
+                            <ol className="list-decimal ml-10">
+                                {resumesToShow && (
+                                    resumesToShow.map((result, idx) => (
+                                        <li key={idx} className="mb-5">
+                                            <div className="font-bold">{result.applicant_name}</div>
+                                            <div className="text-gray-500">{result.filename}</div>
+                                            <div className="">{result.text_preview}</div>
+                                        </li>
+                                    ))   
+                                )}
+                            </ol>
                         </div>
-
                     )
                 }
                 <div className="h-150 border-l border-gray-300 border-1 mx-6"></div>
@@ -91,6 +89,7 @@ export function Upload() {
     const [searchResults, setSearchResults] = useState<RankedResume[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(false);
+    const [searchLoading, setSearchLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -126,7 +125,6 @@ export function Upload() {
                 body: formData
             });
             const data = await response.json();
-            console.log("HERE IS DATA", data);
             setRankedResults(data.data);
         }catch(error){
             alert("Failed to rank resumes");
@@ -136,6 +134,7 @@ export function Upload() {
     };
 
     const handleSearch = async () => {
+        setSearchLoading(true);
         if (!searchQuery.trim()) {
             // If query is empty, shows full list instead
             setSearchResults([]);
@@ -158,8 +157,10 @@ export function Upload() {
 
 
             const data = await response.json();
-            console.log("Search response:", data.data);
-            setSearchResults(data.data.top_matches || []);
+            setTimeout( () => {
+                setSearchResults(data.data.top_matches || []);
+                setSearchLoading(false);
+            }, 1500); // Simulate delay for better UX
         } catch (error) {
             alert("Search failed.");
             if (error instanceof Error) {
@@ -259,6 +260,7 @@ export function Upload() {
                         setSearchQuery={setSearchQuery}
                         searchQuery={searchQuery}
                         loading={loading}
+                        searchLoading={searchLoading} 
                     />
                 </div>
             )}
@@ -267,6 +269,6 @@ export function Upload() {
                 <Footer />
             </div>
         </div>
-);
+    );
 
 }
