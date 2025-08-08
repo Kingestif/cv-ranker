@@ -67,7 +67,7 @@ export function UploadedFiles({ rankedResults, searchResults, handleSearch, setS
                         <button
                             className="bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
                             onClick={handleSearch}
-                            disabled={searchQuery.trim() === ""}
+                            disabled={searchQuery.trim() === "" || searchLoading}
                             >
                             Search
                         </button>
@@ -90,19 +90,12 @@ export function Upload() {
     const [searchQuery, setSearchQuery] = useState("");
     const [loading, setLoading] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
+    const uploadUrl = import.meta.env.VITE_UPLOAD_URL;
+    const searchUrl = import.meta.env.VITE_SEARCH_URL;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-
-        if (!jobDescription.trim()) {
-            alert("Job description is required.");
-            return;
-        }
-        if (selectedFiles.length === 0) {
-            alert("Please upload at least one resume.");
-            return;
-        }
 
         const formData = new FormData();
         selectedFiles.forEach((file) => {
@@ -111,7 +104,7 @@ export function Upload() {
         formData.append('job_description', jobDescription);
 
         setShowUploadedFiles(true); // show files on submit
-        setTimeout(() => {
+            setTimeout(() => {
             if (uploadedFilesRef.current) {
                 uploadedFilesRef.current.scrollIntoView({
                     behavior: "smooth",
@@ -119,15 +112,22 @@ export function Upload() {
             }
         }, 100); 
 
+        
         try{
-            const response = await fetch('http://localhost:3000/api/v1/upload', {
+            const response = await fetch(uploadUrl, {
                 method: 'POST',
                 body: formData
             });
+
+            if (!response.ok) throw new Error();
+            
             const data = await response.json();
             setRankedResults(data.data);
-        }catch(error){
-            alert("Failed to rank resumes");
+            setSearchResults([]);
+            setSearchQuery("");
+
+        }catch(error:any){
+            alert("Failed to Rank Resumes. Please Try again");
         }finally{
             setLoading(false);
         }
@@ -135,26 +135,22 @@ export function Upload() {
 
     const handleSearch = async () => {
         setSearchLoading(true);
-        if (!searchQuery.trim()) {
-            // If query is empty, shows full list instead
-            setSearchResults([]);
-            return;
-        }
-
 
         try {
             if (!rankedResults?.session_id) {
                 alert("Please rank resumes first.");
+                setSearchLoading(false);
                 return;
             }
 
-            const response = await fetch(`http://localhost:3000/api/v1/search/${encodeURIComponent(searchQuery)}`, {
+            const response = await fetch(`${searchUrl}/${encodeURIComponent(searchQuery)}`, {
                 method: "GET",
                 headers: {
                     "x-session-id": rankedResults.session_id
                 }
             });
 
+            if (!response.ok) throw new Error();
 
             const data = await response.json();
             setTimeout( () => {
@@ -213,8 +209,20 @@ export function Upload() {
                             className="hidden"
                             onChange={(e) => {
                                 if (e.target.files) {
-                                    setSelectedFiles(Array.from(e.target.files));
-                                    setShowUploadedFiles(false); // reset visibility on new upload
+                                    const validExtensions = ['.pdf', '.docx'];
+
+                                    const filesArray = Array.from(e.target.files);
+                                    const filteredFiles = filesArray.filter(file => {
+                                        const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+                                        return validExtensions.includes(fileExtension);
+                                    });
+
+                                    if (filteredFiles.length !== e.target.files.length) {
+                                        alert("Only .pdf and .docx files are allowed.");
+                                    }
+
+                                    setSelectedFiles(filteredFiles);
+                                    setShowUploadedFiles(false);
                                 }
                             }}
                         />
@@ -244,7 +252,7 @@ export function Upload() {
                 )}
 
                 {selectedFiles.length > 0 && jobDescription.trim() !== "" && (
-                    <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-blue-700 transition" disabled={selectedFiles.length === 0 || !jobDescription.trim()}>
+                    <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded-md text-sm font-medium hover:bg-blue-700 transition disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed" disabled={selectedFiles.length === 0 || !jobDescription.trim() || loading}>
                         Rank Resumes
                     </button>
                 )}
