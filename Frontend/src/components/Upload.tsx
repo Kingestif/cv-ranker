@@ -72,7 +72,6 @@ export function UploadedFiles({ rankedResults, searchResults, handleSearch, setS
                             Search
                         </button>
                     </div>
-                    <a href="" className="bg-blue-100 text-center text-blue-600 font-semibold px-2 py-3 rounded-2xl hover:bg-blue-200 transition">Hire Professionals?</a>
                 </div>
             </div>
         </div>
