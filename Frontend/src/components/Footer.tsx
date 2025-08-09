@@ -1,4 +1,5 @@
 import { Github, Linkedin, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer(){
     return (
@@ -7,7 +8,7 @@ export function Footer(){
             <div className="flex flex-col">
                 <div className="flex gap-5">
                     <a href="">About</a>
-                    <a href="">Contact</a>
+                    <Link to="/contact">Contact</Link>
                     <a href="">Support</a>
                 </div>
                 <div>©2025 CVision. All right reserved.</div>
