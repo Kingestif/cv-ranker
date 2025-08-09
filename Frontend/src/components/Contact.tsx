@@ -3,7 +3,7 @@ import { NavBar } from "./NavBar"
 import { Footer } from "./Footer"
 import { useState } from "react"
 import Lottie from "lottie-react"
-import checkAnim from "../../public/Success.json"; // path to your file
+import checkAnim from "../../src/assets/Success.json"; 
 
 
 export function Contact(){
@@ -76,7 +76,10 @@ export function Contact(){
                         disabled={sent} 
                         > 
                         {sent ? (
-                            <Lottie animationData={checkAnim} loop={false} style={{ width: 30, height: 30 }} />
+                            <div className="flex">
+                                <Lottie animationData={checkAnim} loop={false} style={{ width: 30, height: 30 }} />
+                                <div>sent!</div>
+                            </div>
                         ) : (
                             "Send"
                         )}
