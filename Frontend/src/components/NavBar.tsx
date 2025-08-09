@@ -7,9 +7,8 @@ export function NavBar(){
             <Link to="/" className="font-bold text-xl text-blue-600">CVision</Link>
             <div className="flex gap-10 text-gray-600">
                 <Link className="hover:text-black" to="/">Home</Link>
-                <a className="hover:text-black" href="">Services</a>
+                <Link className="hover:text-black" to="/services">Services</Link>
                 <Link className="hover:text-black" to="/contact">Contact</Link>
-                {/* <a className="hover:text-black" href="">About</a> */}
             </div>
 
             {location.pathname === '/' && (     //conditionally render "try for free" part

@@ -7,9 +7,9 @@ export function Footer(){
             <div className="text-2xl">CVision</div>
             <div className="flex flex-col">
                 <div className="flex gap-5">
-                    <a href="">About</a>
                     <Link to="/contact">Contact</Link>
-                    <a href="">Support</a>
+                    <Link to="/services">Services</Link>
+                    <a href="https://github.com/Kingestif">About</a>
                 </div>
                 <div>©2025 CVision. All right reserved.</div>
             </div>
