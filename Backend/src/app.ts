@@ -2,9 +2,12 @@ import express from "express";
 import uploadRoute  from "./routes/uploadRoute";
 import searchRoute from "./routes/searchRoute";
 import cors from "cors";
+import morgan from "morgan";
+
 const app = express();
 
 app.use(express.json());
+app.use(morgan("combined")); 
 
 app.use(cors({
   origin: "http://localhost:5173", 
