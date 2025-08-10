@@ -1,7 +1,11 @@
 import redis
 import json
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+redis_url = os.getenv("REDIS_URL")
+r = redis.Redis.from_url(redis_url, decode_responses=True)
 
 def save_session(session_id: str, data: dict, ttl: int = 3600):
     r.set(session_id, json.dumps(data), ex=ttl)
