@@ -8,7 +8,7 @@ export const Search = async(req:Request, res:Response) => {
         // const sessionId = req.params.sessionId;
 
 
-        const response = await axios.post('http://localhost:8000/search', {
+        const response = await axios.post(`${process.env.CVISION_URL}/search`, {
             session_id: sessionId,
             query: query
         });

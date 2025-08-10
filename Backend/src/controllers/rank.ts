@@ -21,7 +21,7 @@ export const Upload = async(req:Request, res:Response) => {
 
         form.append('job_description', job_description);
 
-        const response = await axios.post('http://localhost:8000/upload', form, {
+        const response = await axios.post(`${process.env.CVISION_URL}/upload`, form, {
             headers:form.getHeaders(),
         });
         
