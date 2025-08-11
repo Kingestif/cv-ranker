@@ -1,6 +1,14 @@
-# Cv Ranker
+# CV Ranker
 
-Cv Ranker is a full-stack application that allows recruiters to upload, analyze, and search resumes using AI-powered semantic ranking. The system leverages modern NLP models to match resumes to job descriptions and enables keyword-based search for fine-grained candidate discovery.
+CV Ranker is a full-stack application that allows recruiters to upload, analyze, and search resumes using AI-powered semantic ranking. The system leverages modern NLP models to match resumes to job descriptions and enables keyword-based search for fine-grained candidate discovery.
+
+---
+
+## 🚀 Live Demo
+
+- **Frontend:** [https://cvisionio.vercel.app](https://cvisionio.vercel.app/) 
+- **Backend:** Deployed on Render
+- **Python AI Service:** Deployed on Hugging Face Inference Endpoints
 
 ---
 
@@ -10,8 +18,9 @@ Cv Ranker is a full-stack application that allows recruiters to upload, analyze,
 - **AI Ranking:** Uses Sentence Transformers and FAISS to rank resumes by similarity to a provided job description.
 - **Session Storage:** Stores ranked results in Redis for fast retrieval and search.
 - **Keyword Search:** Recruiters can search for specific skills or keywords (e.g., "Kafka", "React") to further refine candidate ranking.
-- **Frontend & Backend Separation:** Modular architecture with separate folders for frontend, backend (Node.js/Express), and Python AI service.
+- **Frontend & Backend Separation:** Modular architecture with React (Vite) frontend, Node.js/Express backend, and Python AI microservice.
 - **RESTful API:** Clean endpoints for uploading, ranking, and searching resumes.
+- **Production Ready:** Deployed on scalable cloud platforms (Vercel, Render, Hugging Face).
 
 ---
 
@@ -20,17 +29,17 @@ Cv Ranker is a full-stack application that allows recruiters to upload, analyze,
 ```
 resume-ranker/
 │
-├── backend/        # Node.js/Express API server
+├── backend/        # Node.js/Express API server (deployed on Render)
 │   ├── src/
 │   ├── .env
 │   └── .gitignore
 │
-├── frontend/       # React.js  
+├── frontend/       # React.js (Vite) frontend (deployed on Vercel)
 │   ├── src/
 │   ├── .env
 │   └── .gitignore
 │
-├── python-service/ # FastAPI AI microservice
+├── python-service/ # FastAPI AI microservice (deployed on Hugging Face)
 │   ├── main.py
 │   ├── search.py
 │   ├── redis_client.py
@@ -66,7 +75,16 @@ uvicorn main:app --reload
 ```bash
 cd ../backend
 npm install
-# Set up env variables
+# Set up env variables in .env
+npm run dev
+```
+
+### 4. Set up the Frontend
+
+```bash
+cd ../frontend
+npm install
+# Set up env variables in .env
 npm run dev
 ```
 
@@ -96,8 +114,7 @@ Each service has its own `.env` file.
 Example for `python-service/.env`:
 
 ```
-REDIS_HOST=localhost
-REDIS_PORT=6379
+REDIS_URL=your_redis_url
 ALPHA_JD=0.7
 ALPHA_QUERY=0.3
 ```
@@ -106,10 +123,10 @@ ALPHA_QUERY=0.3
 
 ## Tech Stack
 
-- **Frontend:** React.js, Tailwind
-- **Backend:** Node.js, Express, Multer, Axios
-- **AI Service:** Python, FastAPI, Sentence Transformers, FAISS
-- **Database:** Redis (for session storage)
+- **Frontend:** React.js (Vite), Tailwind CSS, Vercel Analytics
+- **Backend:** Node.js, Express, Multer, Axios (deployed on Render)
+- **AI Service:** Python, FastAPI, Sentence Transformers, FAISS (deployed on Hugging Face for better GPU/CPU/RAM options)
+- **Database:** Redis (Upstash, for session storage)
 
 ---
 
@@ -130,3 +147,6 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 - [Sentence Transformers](https://www.sbert.net/)
 - [FAISS](https://github.com/facebookresearch/faiss)
 - [FastAPI](https://fastapi.tiangolo.com/)
+- [Hugging Face Inference Endpoints](https://huggingface.co/inference-endpoints)
+- [Vercel](https://vercel.com/)
+- [Render](https://render.com/)
