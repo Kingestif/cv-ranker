@@ -128,6 +128,9 @@ ALPHA_QUERY=0.3
 - **AI Service:** Python, FastAPI, Sentence Transformers, FAISS (deployed on Hugging Face for better GPU/CPU/RAM options)
 - **Database:** Redis (Upstash, for session storage)
 
+## Prototype
+![alt text](Frontend/public/Cvision_image1.png)
+
 ---
 
 ## Contributing
