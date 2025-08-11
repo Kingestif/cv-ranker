@@ -4,6 +4,8 @@ import { Home } from './components/Home'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Contact } from './components/Contact'
 import ServicesPage from './components/Service'
+import { Analytics } from "@vercel/analytics/react";
+
 
 function App() {
   return (
@@ -14,6 +16,7 @@ function App() {
         <Route path="/contact" element={<Contact/>}/>
         <Route path="/services" element={<ServicesPage/>}/>
       </Routes>
+      <Analytics/>
     </Router>
   )
 }
